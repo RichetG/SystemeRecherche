@@ -73,6 +73,7 @@ public class IndexerRSS {
 			writer.addDocument(document);
 			System.out.println("Indexation de l'item d'id: "+item.getID());
 		}catch(Exception e){
+			System.out.println(e);
 			System.err.println("Erreur d'indexation");
 		}
 
@@ -97,7 +98,48 @@ public class IndexerRSS {
 		for(int i=0; i<hits.length; i++){
 			int docId=hits[i].doc;
 			Document d=indexSearcher.doc(docId);
-			sortie+="Item "+(i+1)+". Titre: "+d.get("Titre")+"\n        ID: "+d.get("ID")+"\n        Description: "+d.get("Description")+"\n        Auteur: "+d.get("Auteur")+"\n        Date: "+d.get("Date")+"\n        URL Source: "+d.get("URL Source")+"\n        URL Flux: "+d.get("URL Flux")+"\n        Langue: "+d.get("Langue")+"\n ------------------------------------------ \n";
+			String titre="", id="", description="", auteur="", date="", flux="", source="", langue="";
+			if(d.get("Titre").equals("")){
+				titre="Inconnu";
+			}else{
+				titre=d.get("Titre");
+			}
+			if(d.get("ID").equals("")){
+				id="Inconnu"; 
+			}else{
+				id=d.get("ID");
+			}
+			if(d.get("Description").equals("")){
+				description="Inconnu";
+			}else{
+				description=d.get("Description");
+			}
+			if(d.get("Auteur").equals("")){
+				auteur="Inconnu";
+			}else{
+				auteur=d.get("Auteur");
+			}
+			if(d.get("Date").equals("")){
+				date="Inconnu";
+			}else{
+				date=d.get("Date");
+			}
+			if(d.get("URL Flux").equals("")){
+				flux="Inconnu";
+			}else{
+				flux=d.get("URL Flux");
+			}
+			if(d.get("URL Source").equals("")){
+				source="Inconnu";
+			}else{
+				source=d.get("URL Source");
+			}
+			if(d.get("Langue").equals("")){
+				langue="Inconnu";
+			}else{
+				langue=d.get("Langue");
+			}
+			sortie+="Item "+(i+1)+". Titre: "+titre+"\n        ID: "+id+"\n        Description: "+description+"\n        Auteur: "+auteur+"\n        Date: "+date+"\n        URL Source: "+source+"\n        URL Flux: "+flux+"\n        Langue: "+langue+"\n        Score: "+hits[i].score+"\n ------------------------------------------ \n";
 		}
 		Interface.out.setText(sortie);
 	}

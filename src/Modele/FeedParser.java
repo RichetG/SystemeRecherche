@@ -37,11 +37,6 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
 
-
-
-
-
-
 import Controleur.Action;
 import Vue.Interface;
 
@@ -69,10 +64,11 @@ public class FeedParser{
 	private Item item;
 	private boolean validite=true;
 	protected ConcurrentNavigableMap<String, Item>Map;
-	private int ratio=0;
+	private double ratio=0;
 	private Thread thread=new Thread();
 	private int temps=30*60;
 	private String URL="";
+	private String entre="";
 
 	/**
 	 * Recupération des flux RSS d'une url
@@ -198,7 +194,6 @@ public class FeedParser{
 		}catch (IOException f){
 			f.printStackTrace();
 		}
-		String entre="";
 		for(String i:lists.KeySet()){
 			if(!Map.containsKey(i)){
 				ratio++;
@@ -207,12 +202,12 @@ public class FeedParser{
 				Action.indexerRSS.IndexRSS(lists.getItem(i));
 			}
 		}
-		entre+="Taux de mise à jour: "+(ratio/Map.size())*100+"%\n -----------------------------------\n\n";
+		entre+="Taux de mise à jour: "+(ratio/(double)Map.size())*100+"%\n -----------------------------------\n\n";
 		Interface.in.setText(entre);
-		Action.indexerRSS.close();
 		db.commit();
 		db.close();
 		ratio=0;
+		validite=false;
 	} 
 
 	/**

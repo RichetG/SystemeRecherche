@@ -35,6 +35,7 @@ public class Action implements ActionListener{
 		if(event.getSource()==Interface.valide){
 			if(Interface.search.getText()!=null){
 				try {
+					Action.indexerRSS.close();
 					indexerRSS.SearchIndexRSS(Interface.search.getText());
 					indexerRSS.close();
 				} catch (IOException | ParseException e) {
