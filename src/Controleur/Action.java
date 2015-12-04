@@ -30,7 +30,10 @@ public class Action implements ActionListener{
 	private FeedParser feedParser=new FeedParser();
 	private JFrame frame;
 	
-	@Override
+	/**
+	 * Mise en place des actions de l'interface
+	 * @param event
+	 */
 	public void actionPerformed(ActionEvent event) {
 		if(event.getSource()==Interface.valide){
 			if(Interface.search.getText()!=null){

@@ -90,7 +90,7 @@ public class IndexerRSS {
 		Directory directory=FSDirectory.open(path);
 		IndexReader indexReader=DirectoryReader.open(directory);
 		IndexSearcher indexSearcher=new IndexSearcher(indexReader);
-		TopScoreDocCollector collector=TopScoreDocCollector.create(10);
+		TopScoreDocCollector collector=TopScoreDocCollector.create(50);
 		Query query=new MultiFieldQueryParser(new String[]{"Titre", "URL Flux", "URL Source", "Auteur", "ID", "Description", "Contenu", "Langue", "Date"}, analyzer).parse(search);
 		indexSearcher.search(query, collector);
 		ScoreDoc[] hits=collector.topDocs().scoreDocs;

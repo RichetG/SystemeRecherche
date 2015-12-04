@@ -69,6 +69,8 @@ public class FeedParser{
 	private int temps=30*60;
 	private String URL="";
 	private String entre="";
+	private Dictionnaire dicoEng, dicoFr;
+	private Stemmer stem;
 
 	/**
 	 * Recupération des flux RSS d'une url
@@ -110,7 +112,7 @@ public class FeedParser{
 
 		while (itEntries.hasNext()) {  
 			SyndEntry entry = (SyndEntry) itEntries.next();  
-			st=entry.getTitle().replaceAll("\\n", "").replaceAll("\\t", "");
+			st=entry.getTitle().replaceAll("\\n", "").replaceAll("\\t", "").replaceAll("[^\\d\\p{L}!#$€%&'`(),;:/@...]"," ");
 			//TODO si le titre et l'url source est inconnu, on rejette l'item car on ne pourra connaitre la clé Id
 			if(st.isEmpty() || entry.getLink().isEmpty()){
 				entry=(SyndEntry) itEntries.next(); //TODO donc on passe au suivant
@@ -158,7 +160,7 @@ public class FeedParser{
 			//fin MD5
 
 			//TODO A chaque entrée fait le test de la détection de langue
-			detector.append(entry.getDescription().getValue().toString());
+			detector.append(st);
 			//Stockage de la lanue dans un String
 			String lang = detector.detect();
 			System.out.println("Langue: " + lang);
@@ -183,7 +185,7 @@ public class FeedParser{
 			System.out.println();
 
 			//TODO stockage des items dans un fichier JSON
-			item=new Item(st, url.toString(), entry.getLink(), entry.getAuthor(), entry.getPublishedDate().toString(), entry.getDescription().getValue().toString(), hashString.toString(), lang, text);
+			item=new Item(st, url.toString(), entry.getLink(), entry.getAuthor(), entry.getPublishedDate().toString(), entry.getDescription().getValue().toString().replaceAll("[^\\d\\p{L}!#$€%&'`(),;:/@...]"," "), hashString.toString(), lang, text);
 			lists.addItem(item);
 		} 
 		try {
@@ -194,11 +196,63 @@ public class FeedParser{
 		}catch (IOException f){
 			f.printStackTrace();
 		}
+
+		//TODO dictionnaire
+		dicoFr=new Dictionnaire();
+		dicoEng=new Dictionnaire();
+		System.out.println("Restauration des dicos\n");
+		dicoFr.read(new File("").getAbsolutePath()+"/dicoFr.txt".replace(" ", ""));
+		dicoFr.read(new File("").getAbsolutePath()+"/dicoEng.txt".replace(" ", ""));
+		stem=new Stemmer();
+		/*Pour chaque item (titre, description) spliter la phrase et faire un stemmer de chaque mot
+		 * si mot existant dans le dico incrementer tf sinon ajouter au dico
+		 */
+
+		//TODO ajout des items inexistants dans mapDb
 		for(String i:lists.KeySet()){
 			if(!Map.containsKey(i)){
 				ratio++;
 				Map.put(i, lists.getItem(i));
 				entre+="Item d'ID: "+i+" ajouté\n       Titre: "+lists.getItem(i).getTitre()+"\n";
+
+				String[] tit=lists.getItem(i).getTitre().split(" ");
+				String[] des=lists.getItem(i).getDescription().split(" ");
+				boolean lang=false;
+				if(lists.getItem(i).getLangue().equals("fr")){
+					lang=true;
+				}
+				for(int j=0; j<tit.length; j++){
+					//si le stem exixste dans le dico, on incremente tf, sinon on le cree
+					if(lang){
+						if(dicoFr.parcours(stem.motsRacine(tit[j]))){
+							dicoFr.doublon(stem.motsRacine(tit[j]));
+						}else{
+							dicoFr.add(stem.motsRacine(tit[j]));
+						}
+					}else{
+						if(dicoEng.parcours(stem.rootWord(tit[j]))){
+							dicoEng.doublon(stem.rootWord(tit[j]));
+						}else{
+							dicoEng.add(stem.rootWord(tit[j]));
+						}
+					}
+				}
+				for(int j=0; j<des.length; j++){
+					if(lang){
+						if(dicoFr.parcours(stem.motsRacine(des[j]))){
+							dicoFr.doublon(stem.motsRacine(des[j]));
+						}else{
+							dicoFr.add(stem.motsRacine(des[j]));
+						}
+					}else{
+						if(dicoEng.parcours(stem.rootWord(des[j]))){
+							dicoEng.doublon(stem.rootWord(des[j]));
+						}else{
+							dicoEng.add(stem.rootWord(des[j]));
+						}
+					}
+				}
+
 				Action.indexerRSS.IndexRSS(lists.getItem(i));
 			}
 		}
@@ -208,6 +262,10 @@ public class FeedParser{
 		db.close();
 		ratio=0;
 		validite=false;
+
+		System.out.println("\nSauvegarde des dicos");
+		dicoFr.write(new File("").getAbsolutePath()+"/dicoFr.txt".replace(" ", ""));
+		dicoEng.write(new File("").getAbsolutePath()+"/dicoEng.txt".replace(" ", ""));
 	} 
 
 	/**
@@ -247,7 +305,7 @@ public class FeedParser{
 	public void setTemps(int temps){
 		this.temps=temps;
 	}
-	
+
 	/**
 	 * Getter d'url
 	 * @return url
@@ -255,7 +313,7 @@ public class FeedParser{
 	public String getURL(){
 		return URL;
 	}
-	
+
 	/**
 	 * Setter d'url
 	 */
