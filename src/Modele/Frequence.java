@@ -1,16 +1,22 @@
 package Modele;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+
 public class Frequence {
 
 	private int tf;
 	private double idf;
-	
+	private HashSet<String>listKey;
+
 	/**
 	 * Constructeur Frequence par défault
 	 */
 	public Frequence(){
 		tf=1;
 		idf=-1.0;
+		listKey=new HashSet<String>();
 	}
 	
 	/**
@@ -21,6 +27,7 @@ public class Frequence {
 	public Frequence(int tf, double idf){
 		this.tf=tf;
 		this.idf=idf;
+		listKey=new HashSet<String>();
 	}
 	
 	/**
@@ -34,8 +41,8 @@ public class Frequence {
 	 * Calcul de la idf
 	 * @param nbDoc
 	 */
-	public void CalcIdf(int nbDoc){
-		idf=-Math.log(tf/nbDoc);
+	public void CalcIdf(){
+		idf=-Math.log(tf/listKey.size());
 	}
 	
 	/**
@@ -68,5 +75,26 @@ public class Frequence {
 	 */
 	public void setIdf(double idf){
 		this.idf=idf;
+	}
+	
+	/**
+	 * Ajout d'une clé
+	 * @param key
+	 */
+	public void addKey(String key){
+		listKey.add(key);
+	}
+	
+	/**
+	 * Accesseur de tous les clés
+	 * @return
+	 */
+	public ArrayList<String> getListKey(){
+		ArrayList<String>tmp=new ArrayList<String>();
+		Iterator<String>it=listKey.iterator();
+		while(it.hasNext()){
+			tmp.add(it.next());
+		}
+		return tmp;
 	}
 }

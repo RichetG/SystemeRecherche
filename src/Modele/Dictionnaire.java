@@ -1,65 +1,117 @@
 package Modele;
 
+import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
 
 public class Dictionnaire {
 
 	private HashMap<String, Frequence> dico;
-	
+
+	/**
+	 * Constructeur Dictionnaire
+	 */
 	public Dictionnaire(){
 		dico=new HashMap<String, Frequence>();
 	}
 	
-	public Set<String> listCle(){
+	public int size(){
+		return dico.size();
+	}
+
+	/**
+	 * Getter du contenu des clé du dico
+	 * @return liste clé
+	 */
+	public Set<String> listStem(){
 		return dico.keySet();
 	}
-	
-	public void add(String key){
-		dico.put(key, new Frequence());
+
+	/**
+	 * Getter de la frequence
+	 * @param key
+	 * @return
+	 */
+	public Frequence getFrequence(String key){
+		return dico.get(key);
 	}
-	
-	public void doublon(String key){
-		dico.get(key).IncrementTf();
+
+	/**
+	 * Ajout d'une clé
+	 * @param key
+	 */
+	public void add(String stem, String doc){
+		Frequence frequence=new Frequence();
+		frequence.addKey(doc);
+		dico.put(stem, frequence);
 	}
-	
-	public void idf(String key, int nbDoc){
-		dico.get(key).CalcIdf(nbDoc);
+
+	/**
+	 * Incrementation du tf
+	 * @param key
+	 */
+	public void doublon(String stem, String doc){
+		dico.get(stem).IncrementTf();
+		dico.get(stem).addKey(doc);
 	}
-	
-	public void write(String filename){
+
+	/**
+	 * Sauvegarde du dico
+	 * @param filename
+	 * @throws IOException
+	 */
+	public void write(File filename) throws IOException{
 		try {
-			FileOutputStream out=new FileOutputStream(new File(filename));
+			FileWriter fos=new FileWriter(filename);
 			for(String i:dico.keySet()){
-				String content=i+" "+dico.get(i).getTf()+" "+dico.get(i).getIdf()+"\n";
-				out.write(content.getBytes());
-				out.flush();
+				String tmp=i+" "+dico.get(i).getTf()+" "+dico.get(i).getIdf()+" {";
+				ArrayList<String>ids=dico.get(i).getListKey();
+				for(int j=0; j<ids.size(); j++){
+					tmp+=ids.get(j)+",";
+				}
+				tmp+="}\n";
+				fos.write(tmp);
 			}
-			out.close();
-		}catch (IOException f){
-			f.printStackTrace();
+			fos.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
 		}
 	}
-	
-	public void read(String filename){
+
+	/**
+	 * Restauration du dico
+	 * @param filename
+	 * @throws IOException
+	 */
+	public void read(File filename) throws IOException{
 		try {
-			FileInputStream in=new FileInputStream(new File(filename));
-			int content;
-			while((content=in.read())!=-1){
-				String[] tab=String.valueOf(content).split(" ");
-				Frequence freq=new Frequence(Integer.parseInt(tab[1]), Double.parseDouble(tab[2]));
-				dico.put(tab[0], freq);
+			FileReader fis=new FileReader(filename);
+			BufferedReader reader=new BufferedReader(fis);
+			String line="";
+			while((line=reader.readLine())!=null){
+				String[] tmp=line.split(" ");
+				if(tmp.length==4){
+					Frequence frequence=new Frequence(Integer.valueOf(tmp[1]), Double.valueOf(tmp[2]));
+					String[] ids=tmp[3].replace("{", "").replace(",}", "").split(",");
+					for(int i=0; i<ids.length; i++){
+						frequence.addKey(ids[i]);
+					}
+					dico.put(tmp[0], frequence);
+				}
 			}
-			in.close();
-		}catch (IOException f){
-			f.printStackTrace();
+			reader.close();
+			fis.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * Test de l'existance du stem
 	 * @param mots

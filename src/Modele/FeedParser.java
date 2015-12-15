@@ -2,7 +2,6 @@ package Modele;
 
 //ROME example 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -13,7 +12,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentNavigableMap;
-
 
 //api tika
 import org.apache.http.HttpEntity;
@@ -27,19 +25,14 @@ import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.Parser;
 import org.apache.tika.sax.BodyContentHandler;
-
-//api JSON
-import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-
 import Controleur.Action;
 import Vue.Interface;
-
 
 //api langage detection
 import com.cybozu.labs.langdetect.DetectorFactory;
@@ -49,6 +42,7 @@ import com.sun.syndication.feed.synd.SyndFeed;
 import com.sun.syndication.io.FeedException;
 import com.sun.syndication.io.SyndFeedInput;
 import com.sun.syndication.io.XmlReader;
+//api JSON
 
 /**
  * @description Classe FeedParser détecte tous les items présent dans le flux RSS
@@ -71,6 +65,9 @@ public class FeedParser{
 	private String entre="";
 	private Dictionnaire dicoEng, dicoFr;
 	private Stemmer stem;
+	private ListCategorie listCategorie;
+	private Discriminant discriminant=new Discriminant();
+	private Categorie sportFr, sportEn, santeFr, santeEn, econoEn, econoFr, scienceFr, scienceEn, cinemaFr, cinemaEn;
 
 	/**
 	 * Recupération des flux RSS d'une url
@@ -94,8 +91,7 @@ public class FeedParser{
 		@SuppressWarnings("rawtypes")
 		Iterator itEntries = entries.iterator();  
 
-		String st;
-		String text="";
+		String st, text="", date="";
 
 		//TODO utilisation de mapDp
 		DB db=DBMaker.newFileDB(new File("BDD")).closeOnJvmShutdown().encryptionEnable("password").make();
@@ -125,10 +121,12 @@ public class FeedParser{
 			}else{
 				System.out.println("Auteur: Inconnu");
 			}
-			if(!entry.getPublishedDate().toString().isEmpty()){
+			if(entry.getPublishedDate()!=null){
 				System.out.println("Date publication: " + entry.getPublishedDate()); 
+				date=entry.getPublishedDate().toString();
 			}else{
 				System.out.println("Date publication: Inconnu");
+				date="Inconnu";
 			}
 			if(!entry.getDescription().getValue().isEmpty()){
 				System.out.println("Description: " + entry.getDescription().getValue());
@@ -178,35 +176,60 @@ public class FeedParser{
 			char [] content = handler.toString().toCharArray();
 			//Ignore les espaces dans mon contenu parsé
 			handler.ignorableWhitespace(content, 0, content.length);
-			parser.parse(instream, handler, metadata, new ParseContext());
-			//Remplacement de tous les charactères spéciaux par un vide
-			text=handler.toString().replaceAll("[^\\d\\p{L}!#$€%&'`(),;:/@...]","");
+			try {
+				parser.parse(instream, handler, metadata, new ParseContext());
+				//Remplacement de tous les charactères spéciaux par un vide
+				text=handler.toString().replaceAll("[^\\d\\p{L}!#$€%&'`(),;:/@...]","");
+			}catch (IOException e){
+				text="";
+			}
+
 			System.out.println("content: " + text);
 			System.out.println();
 
 			//TODO stockage des items dans un fichier JSON
-			item=new Item(st, url.toString(), entry.getLink(), entry.getAuthor(), entry.getPublishedDate().toString(), entry.getDescription().getValue().toString().replaceAll("[^\\d\\p{L}!#$€%&'`(),;:/@...]"," "), hashString.toString(), lang, text);
+			item=new Item(st, url.toString(), entry.getLink(), entry.getAuthor(), date, entry.getDescription().getValue().toString().replaceAll("[^\\d\\p{L}!#$€%&'`(),;:/@...]"," "), hashString.toString(), lang, text);
 			lists.addItem(item);
 		} 
-		try {
+		/*try {
 			FileOutputStream out=new FileOutputStream(new File("items.json"));
 			objectMapper.writeValue(out, lists);
 		}catch (JsonGenerationException f){
 			f.printStackTrace();
 		}catch (IOException f){
 			f.printStackTrace();
-		}
+		}*/
+
+		//TODO categorie
+		listCategorie=new ListCategorie();
+		sportFr=new Categorie("SportFr");
+		sportEn=new Categorie("SportEn");
+		santeFr=new Categorie("SanteFr");
+		santeEn=new Categorie("SanteEn");
+		scienceFr=new Categorie("ScienceFr");
+		scienceEn=new Categorie("ScienceEn");
+		cinemaFr=new Categorie("CinemaFr");
+		cinemaEn=new Categorie("CinemaEn");
+		econoFr=new Categorie("EconoFr");
+		econoEn=new Categorie("EconoEn");
+		listCategorie.add(sportFr);
+		listCategorie.add(sportEn);
+		listCategorie.add(santeFr);
+		listCategorie.add(santeEn);
+		listCategorie.add(scienceFr);
+		listCategorie.add(scienceEn);
+		listCategorie.add(econoFr);
+		listCategorie.add(econoEn);
+		listCategorie.add(cinemaFr);
+		listCategorie.add(cinemaEn);
 
 		//TODO dictionnaire
 		dicoFr=new Dictionnaire();
 		dicoEng=new Dictionnaire();
 		System.out.println("Restauration des dicos\n");
-		dicoFr.read(new File("").getAbsolutePath()+"/dicoFr.txt".replace(" ", ""));
-		dicoFr.read(new File("").getAbsolutePath()+"/dicoEng.txt".replace(" ", ""));
+		dicoFr.read(new File("dicoFr.txt"));
+		dicoFr.read(new File("dicoEng.txt"));
 		stem=new Stemmer();
-		/*Pour chaque item (titre, description) spliter la phrase et faire un stemmer de chaque mot
-		 * si mot existant dans le dico incrementer tf sinon ajouter au dico
-		 */
 
 		//TODO ajout des items inexistants dans mapDb
 		for(String i:lists.KeySet()){
@@ -215,46 +238,48 @@ public class FeedParser{
 				Map.put(i, lists.getItem(i));
 				entre+="Item d'ID: "+i+" ajouté\n       Titre: "+lists.getItem(i).getTitre()+"\n";
 
-				String[] tit=lists.getItem(i).getTitre().split(" ");
-				String[] des=lists.getItem(i).getDescription().split(" ");
-				boolean lang=false;
-				if(lists.getItem(i).getLangue().equals("fr")){
-					lang=true;
+				//TODO categorie defaut
+				//flux des sport FR
+				if(urlEntree.equals("http://rmcsport.bfmtv.com/rss/basket/")){
+					stemFr(lists.getItem(i));
+					sportFr.addItemCategorie(lists.getItem(i));
+				}else if(urlEntree.equals("http://www.thetimes.co.uk/tto/sport/rss")){
+					stemEn(lists.getItem(i));
+					sportEn.addItemCategorie(lists.getItem(i));
+				}else if(urlEntree.equals("http://www.lemonde.fr/sante/rss_full.xml")){
+					stemFr(lists.getItem(i));
+					santeFr.addItemCategorie(lists.getItem(i));
+				}else if(urlEntree.equals("http://www.thetimes.co.uk/tto/health/rss")){
+					stemEn(lists.getItem(i));
+					santeEn.addItemCategorie(lists.getItem(i));
+				}else if(urlEntree.equals("http://www.lemonde.fr/sciences/rss_full.xml")){
+					stemFr(lists.getItem(i));
+					scienceFr.addItemCategorie(lists.getItem(i));
+				}else if(urlEntree.equals("http://www.thetimes.co.uk/tto/science/rss")){
+					stemEn(lists.getItem(i));
+					scienceEn.addItemCategorie(lists.getItem(i));
+				}else if(urlEntree.equals("http://rss.allocine.fr/ac/actualites/cine")){
+					stemFr(lists.getItem(i));
+					cinemaFr.addItemCategorie(lists.getItem(i));
+				}else if(urlEntree.equals("http://feeds.feedburner.com/cinemablendallthing")){
+					stemEn(lists.getItem(i));
+					cinemaEn.addItemCategorie(lists.getItem(i));
+				}else if(urlEntree.equals("http://www.thetimes.co.uk/tto/business/rss")){
+					stemFr(lists.getItem(i));
+					econoFr.addItemCategorie(lists.getItem(i));
+				}else if(urlEntree.equals("http://www.lesechos.fr/rss/rss_articles_journal.xml")){
+					stemEn(lists.getItem(i));
+					econoEn.addItemCategorie(lists.getItem(i));
 				}
-				for(int j=0; j<tit.length; j++){
-					//si le stem exixste dans le dico, on incremente tf, sinon on le cree
-					if(lang){
-						if(dicoFr.parcours(stem.motsRacine(tit[j]))){
-							dicoFr.doublon(stem.motsRacine(tit[j]));
-						}else{
-							dicoFr.add(stem.motsRacine(tit[j]));
-						}
-					}else{
-						if(dicoEng.parcours(stem.rootWord(tit[j]))){
-							dicoEng.doublon(stem.rootWord(tit[j]));
-						}else{
-							dicoEng.add(stem.rootWord(tit[j]));
-						}
-					}
-				}
-				for(int j=0; j<des.length; j++){
-					if(lang){
-						if(dicoFr.parcours(stem.motsRacine(des[j]))){
-							dicoFr.doublon(stem.motsRacine(des[j]));
-						}else{
-							dicoFr.add(stem.motsRacine(des[j]));
-						}
-					}else{
-						if(dicoEng.parcours(stem.rootWord(des[j]))){
-							dicoEng.doublon(stem.rootWord(des[j]));
-						}else{
-							dicoEng.add(stem.rootWord(des[j]));
-						}
-					}
-				}
-
 				Action.indexerRSS.IndexRSS(lists.getItem(i));
 			}
+		}
+		//mise a jour du calcul de idf
+		for(String i: dicoFr.listStem()){
+			dicoFr.getFrequence(i).CalcIdf();
+		}
+		for(String i: dicoEng.listStem()){
+			dicoEng.getFrequence(i).CalcIdf();
 		}
 		entre+="Taux de mise à jour: "+(ratio/(double)Map.size())*100+"%\n -----------------------------------\n\n";
 		Interface.in.setText(entre);
@@ -264,8 +289,10 @@ public class FeedParser{
 		validite=false;
 
 		System.out.println("\nSauvegarde des dicos");
-		dicoFr.write(new File("").getAbsolutePath()+"/dicoFr.txt".replace(" ", ""));
-		dicoEng.write(new File("").getAbsolutePath()+"/dicoEng.txt".replace(" ", ""));
+		dicoFr.write(new File("dicoFr.txt"));
+		dicoEng.write(new File("dicoEng.txt"));
+		
+		//TODO utilisation weka
 	} 
 
 	/**
@@ -319,5 +346,57 @@ public class FeedParser{
 	 */
 	public void setURL(String URL){
 		this.URL=URL;
+	}
+
+	private void stemFr(Item i){
+		String traitementTit=i.getTitre().toLowerCase().replace(".", "").replace("/", "").replace(":", "").replace("?", "").replace("(", "").replace(",", "");	
+		String traitementDes=i.getDescription().toLowerCase().replace(".", "").replace("/", "").replace(":", "").replace("?", "").replace("(", "").replace(",", "");	
+		String[] tit=traitementTit.split(" ");
+		String[] des=traitementDes.split(" ");
+		for(int j=0; j<tit.length; j++){
+			//si le stem exixste dans le dico, on incremente tf, sinon on le cree
+			if(!discriminant.existFr(tit[j])){
+				if(dicoFr.parcours(stem.motsRacine(tit[j]))){
+					dicoFr.doublon(stem.motsRacine(tit[j]), i.getID());
+				}else{
+					dicoFr.add(stem.motsRacine(tit[j]), i.getID());
+				}
+			}
+		}
+		for(int j=0; j<des.length; j++){
+			if(!discriminant.existFr(des[j])){
+				if(dicoFr.parcours(stem.motsRacine(des[j]))){
+					dicoFr.doublon(stem.motsRacine(des[j]), i.getID());
+				}else{
+					dicoFr.add(stem.motsRacine(des[j]), i.getID());
+				}
+			}
+		}
+	}
+
+	private void stemEn(Item i){
+		String traitementTit=i.getTitre().toLowerCase().replace(".", "").replace("/", "").replace(":", "").replace("?", "").replace("(", "").replace(",", "");	
+		String traitementDes=i.getDescription().toLowerCase().replace(".", "").replace("/", "").replace(":", "").replace("?", "").replace("(", "").replace(",", "");	
+		String[] tit=traitementTit.split(" ");
+		String[] des=traitementDes.split(" ");
+		for(int j=0; j<tit.length; j++){
+			//si le stem exixste dans le dico, on incremente tf, sinon on le cree
+			if(!discriminant.existEn(tit[j])){
+				if(dicoEng.parcours(stem.motsRacine(tit[j]))){
+					dicoEng.doublon(stem.motsRacine(tit[j]), i.getID());
+				}else{
+					dicoEng.add(stem.motsRacine(tit[j]), i.getID());
+				}
+			}
+		}
+		for(int j=0; j<des.length; j++){
+			if(!discriminant.existEn(des[j])){
+				if(dicoEng.parcours(stem.motsRacine(des[j]))){
+					dicoEng.doublon(stem.motsRacine(des[j]), i.getID());
+				}else{
+					dicoEng.add(stem.motsRacine(des[j]), i.getID());
+				}
+			}
+		}
 	}
 }  
