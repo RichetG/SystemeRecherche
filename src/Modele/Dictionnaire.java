@@ -13,6 +13,7 @@ import java.util.Set;
 public class Dictionnaire {
 
 	private HashMap<String, Frequence> dico;
+	private String langue="";
 
 	/**
 	 * Constructeur Dictionnaire
@@ -67,6 +68,7 @@ public class Dictionnaire {
 	 * @throws IOException
 	 */
 	public void write(File filename) throws IOException{
+		langue=filename.toString().replace("donnee\\dico", "").replace(".txt", "");
 		try {
 			FileWriter fos=new FileWriter(filename);
 			for(String i:dico.keySet()){
@@ -82,6 +84,10 @@ public class Dictionnaire {
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public String getLangue(){
+		return langue;
 	}
 
 	/**

@@ -17,4 +17,8 @@ public class ListCategorie {
 	public void add(Categorie categorie){
 		liste.add(categorie);
 	}
+	
+	public Categorie get(int i){
+		return liste.get(i);
+	}
 }

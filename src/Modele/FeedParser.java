@@ -19,7 +19,6 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.parser.ParseContext;
@@ -29,17 +28,14 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
 import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
 
 import Controleur.Action;
 import Vue.Interface;
 
 //api langage detection
 import com.cybozu.labs.langdetect.DetectorFactory;
-import com.cybozu.labs.langdetect.LangDetectException;
 import com.sun.syndication.feed.synd.SyndEntry;
 import com.sun.syndication.feed.synd.SyndFeed;
-import com.sun.syndication.io.FeedException;
 import com.sun.syndication.io.SyndFeedInput;
 import com.sun.syndication.io.XmlReader;
 //api JSON
@@ -67,19 +63,15 @@ public class FeedParser{
 	private Stemmer stem;
 	private ListCategorie listCategorie;
 	private Discriminant discriminant=new Discriminant();
+	private Classication classFr, classEn;
 	private Categorie sportFr, sportEn, santeFr, santeEn, econoEn, econoFr, scienceFr, scienceEn, cinemaFr, cinemaEn;
 
 	/**
 	 * Recupération des flux RSS d'une url
 	 * @param urlEntree
-	 * @throws IOException
-	 * @throws IllegalArgumentException
-	 * @throws FeedException
-	 * @throws LangDetectException
-	 * @throws SAXException
-	 * @throws TikaException
+	 * @throws Exception 
 	 */
-	public void ReaderFeed(String urlEntree) throws IOException, IllegalArgumentException, FeedException, LangDetectException, SAXException, TikaException{
+	public void ReaderFeed(String urlEntree) throws Exception{
 		URL url = new URL(urlEntree);
 
 		HttpURLConnection httpcon = (HttpURLConnection)url.openConnection();  
@@ -212,6 +204,16 @@ public class FeedParser{
 		cinemaEn=new Categorie("CinemaEn");
 		econoFr=new Categorie("EconoFr");
 		econoEn=new Categorie("EconoEn");
+		sportFr.read(new File("donnee/sportFr.ser"));
+		sportEn.read(new File("donnee/sportEn.ser"));
+		santeFr.read(new File("donnee/santeFr.ser"));
+		santeEn.read(new File("donnee/santeEn.ser"));
+		scienceFr.read(new File("donnee/scienceFr.ser"));
+		scienceEn.read(new File("donnee/scienceEn.ser"));
+		cinemaFr.read(new File("donnee/cinemaFr.ser"));
+		cinemaEn.read(new File("donnee/cinemaEn.ser"));
+		econoFr.read(new File("donnee/econoFr.ser"));
+		econoEn.read(new File("donnee/econoEn.ser"));
 		listCategorie.add(sportFr);
 		listCategorie.add(sportEn);
 		listCategorie.add(santeFr);
@@ -222,13 +224,13 @@ public class FeedParser{
 		listCategorie.add(econoEn);
 		listCategorie.add(cinemaFr);
 		listCategorie.add(cinemaEn);
-
+		
 		//TODO dictionnaire
 		dicoFr=new Dictionnaire();
 		dicoEng=new Dictionnaire();
 		System.out.println("Restauration des dicos\n");
-		dicoFr.read(new File("dicoFr.txt"));
-		dicoFr.read(new File("dicoEng.txt"));
+		dicoFr.read(new File("donnee/dicoFr.txt"));
+		dicoEng.read(new File("donnee/dicoEng.txt"));
 		stem=new Stemmer();
 
 		//TODO ajout des items inexistants dans mapDb
@@ -264,10 +266,10 @@ public class FeedParser{
 				}else if(urlEntree.equals("http://feeds.feedburner.com/cinemablendallthing")){
 					stemEn(lists.getItem(i));
 					cinemaEn.addItemCategorie(lists.getItem(i));
-				}else if(urlEntree.equals("http://www.thetimes.co.uk/tto/business/rss")){
+				}else if(urlEntree.equals("http://www.lesechos.fr/rss/rss_articles_journal.xml")){
 					stemFr(lists.getItem(i));
 					econoFr.addItemCategorie(lists.getItem(i));
-				}else if(urlEntree.equals("http://www.lesechos.fr/rss/rss_articles_journal.xml")){
+				}else if(urlEntree.equals("http://www.thetimes.co.uk/tto/business/rss")){
 					stemEn(lists.getItem(i));
 					econoEn.addItemCategorie(lists.getItem(i));
 				}
@@ -280,7 +282,7 @@ public class FeedParser{
 		}
 		for(String i: dicoEng.listStem()){
 			dicoEng.getFrequence(i).CalcIdf();
-		}
+		}		
 		entre+="Taux de mise à jour: "+(ratio/(double)Map.size())*100+"%\n -----------------------------------\n\n";
 		Interface.in.setText(entre);
 		db.commit();
@@ -288,24 +290,42 @@ public class FeedParser{
 		ratio=0;
 		validite=false;
 
-		System.out.println("\nSauvegarde des dicos");
-		dicoFr.write(new File("dicoFr.txt"));
-		dicoEng.write(new File("dicoEng.txt"));
+		System.out.println("Sauvegarde des dicos\n");
+		dicoFr.write(new File("donnee/dicoFr.txt"));
+		dicoEng.write(new File("donnee/dicoEng.txt"));
+
+		sportFr.write(new File("donnee/sportFr.ser"));
+		sportEn.write(new File("donnee/sportEn.ser"));
+		santeFr.write(new File("donnee/santeFr.ser"));
+		santeEn.write(new File("donnee/santeEn.ser"));
+		scienceFr.write(new File("donnee/scienceFr.ser"));
+		scienceEn.write(new File("donnee/scienceEn.ser"));
+		cinemaFr.write(new File("donnee/cinemaFr.ser"));
+		cinemaEn.write(new File("donnee/cinemaEn.ser"));
+		econoFr.write(new File("donnee/econoFr.ser"));
+		econoEn.write(new File("donnee/econoEn.ser"));
 		
-		//TODO utilisation weka
+		//TODO classifieur
+		System.out.println("Classification");
+		classFr=new Classication(dicoFr);
+		classEn=new Classication(dicoEng);
+		for(int i=0; i<listCategorie.size(); i+=2){
+			classFr.instance(listCategorie.get(i));
+		}
+		//TODO pb version anglais
+		/*for(int i=1; i<listCategorie.size(); i+=2){
+			classEn.instance(listCategorie.get(i));
+		}*/
+		classFr.save();
+		classEn.save();
 	} 
 
 	/**
 	 * Revisite du flux RSS
-	 * @throws IllegalArgumentException
-	 * @throws IOException
-	 * @throws FeedException
-	 * @throws LangDetectException
-	 * @throws SAXException
-	 * @throws TikaException
+	 * @throws Exception 
 	 */
 	@SuppressWarnings("static-access")
-	public void revisite() throws IllegalArgumentException, IOException, FeedException, LangDetectException, SAXException, TikaException{
+	public void revisite() throws Exception{
 		//TODO mise en place de la revisite tous les x secondes(boucle infini)
 		//validite=false;
 		try {

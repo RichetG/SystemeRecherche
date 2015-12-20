@@ -56,6 +56,8 @@ public class Action implements ActionListener{
 			} catch (IllegalArgumentException | IOException | FeedException
 					| LangDetectException | SAXException | TikaException e) {
 				e.printStackTrace();
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
 		}else if(event.getSource()==Interface.temps){
 			frame=new JFrame("");
