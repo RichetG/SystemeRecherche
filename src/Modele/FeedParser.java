@@ -232,7 +232,7 @@ public class FeedParser{
 		dicoFr.read(new File("donnee/dicoFr.txt"));
 		dicoEng.read(new File("donnee/dicoEng.txt"));
 		stem=new Stemmer();
-
+		
 		//TODO ajout des items inexistants dans mapDb
 		for(String i:lists.KeySet()){
 			if(!Map.containsKey(i)){
@@ -272,10 +272,42 @@ public class FeedParser{
 				}else if(urlEntree.equals("http://www.thetimes.co.uk/tto/business/rss")){
 					stemEn(lists.getItem(i));
 					econoEn.addItemCategorie(lists.getItem(i));
+				}else{
+					if(lists.getItem(i).getLangue().equals("fr")){
+						stemFr(lists.getItem(i));
+						//Mise a jour du classifier
+						classFr=new Classication(dicoFr);
+						String test="sport, sante, science, eco, cine, autre: ";
+						for(int j=0; j<listCategorie.size(); j+=2){
+							classFr.instance(listCategorie.get(j));
+							test+=listCategorie.get(j).size()+" ";
+						}
+						System.out.println(test);
+						String cat=classFr.instanceInconnu(lists.getItem(i));
+						for(int j=0; j<listCategorie.size(); j++){
+							if(listCategorie.get(j).getCategorie().equals(cat)){
+								listCategorie.get(j).addItemCategorie(lists.getItem(i));
+							}
+						}
+					}else{
+						stemEn(lists.getItem(i));
+						classEn=new Classication(dicoEng);
+						//TODO pb version anglais
+						for(int j=1; j<listCategorie.size(); j+=2){
+							classEn.instance(listCategorie.get(j));
+						}
+						String cat=classEn.instanceInconnu(lists.getItem(i));
+						for(int j=0; j<listCategorie.size(); j++){
+							if(listCategorie.get(j).getCategorie().equals(cat)){
+								listCategorie.get(j).addItemCategorie(lists.getItem(i));
+							}
+						}
+					}
 				}
 				Action.indexerRSS.IndexRSS(lists.getItem(i));
 			}
 		}
+		//classFr.save();
 		//mise a jour du calcul de idf
 		for(String i: dicoFr.listStem()){
 			dicoFr.getFrequence(i).CalcIdf();
@@ -305,7 +337,7 @@ public class FeedParser{
 		econoFr.write(new File("donnee/econoFr.ser"));
 		econoEn.write(new File("donnee/econoEn.ser"));
 		
-		//TODO classifieur
+		//TODO classifieur misa  jour final
 		System.out.println("Classification");
 		classFr=new Classication(dicoFr);
 		classEn=new Classication(dicoEng);

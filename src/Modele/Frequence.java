@@ -42,7 +42,7 @@ public class Frequence {
 	 * @param nbDoc
 	 */
 	public void CalcIdf(){
-		idf=-Math.log(tf/listKey.size());
+		idf=-(Math.log(tf/listKey.size())/Math.log(2));
 	}
 	
 	/**

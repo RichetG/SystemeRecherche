@@ -68,7 +68,6 @@ public class Dictionnaire {
 	 * @throws IOException
 	 */
 	public void write(File filename) throws IOException{
-		langue=filename.toString().replace("donnee\\dico", "").replace(".txt", "");
 		try {
 			FileWriter fos=new FileWriter(filename);
 			for(String i:dico.keySet()){
@@ -96,6 +95,7 @@ public class Dictionnaire {
 	 * @throws IOException
 	 */
 	public void read(File filename) throws IOException{
+		langue=filename.toString().replace("donnee\\dico", "").replace(".txt", "");
 		try {
 			FileReader fis=new FileReader(filename);
 			BufferedReader reader=new BufferedReader(fis);

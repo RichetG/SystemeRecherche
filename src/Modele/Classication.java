@@ -3,6 +3,10 @@ package Modele;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Random;
+import java.util.Set;
 
 import weka.classifiers.Classifier;
 import weka.classifiers.bayes.NaiveBayes;
@@ -64,10 +68,72 @@ public class Classication {
 				}
 				instance.setValue((Attribute)fvWekaAttributes.elementAt(j), val);
 			}
-			System.out.println("je suis passe "+categorie.getCategorie());
 			instance.setValue((Attribute)fvWekaAttributes.elementAt(attribut.size()), categorie.getCategorie());
-			isTrainingSet.add(instance);			 		    
+			isTrainingSet.add(instance);
 		}
+		
+	}
+
+	public String instanceInconnu(Item item){
+		String traitementTit=item.getTitre().toLowerCase().replace(".", "").replace("/", "").replace(":", "").replace("?", "").replace("(", "").replace(",", "");	
+		String traitementDes=item.getDescription().toLowerCase().replace(".", "").replace("/", "").replace(":", "").replace("?", "").replace("(", "").replace(",", "");	
+		HashMap<String, Integer> liste=tableau(traitementTit, traitementDes);	
+		Instance instance=new Instance(attribut.size()+1);
+		for(int j=0; j<attribut.size(); j++){
+			double val=0.01;
+			if(liste.get(fvWekaAttributes.elementAt(j).toString().replace(" numeric", "").replace("@attribute ", ""))!=null){
+				val=liste.get(fvWekaAttributes.elementAt(j).toString().replace(" numeric", "").replace("@attribute ", ""));
+			}
+			instance.setValue((Attribute)fvWekaAttributes.elementAt(j), val);
+		}		
+		isTrainingSet.add(instance);
+		/*
+		 * parcours de l'instance courante pour déterminer la valeur max >1:
+		 * si oui on conserve sur num indexation (le dernier max trouvé)
+		 * si non on stocke l'item dans la categorie autre
+		 * ensuite on parcous toute les instances des valeurs de l'indexation trouvé pour connaitre celle avec le num d'accurance max le dernier max trouvé)
+		 * stocke l'item avec la categorie trouvé
+		 */
+		String cat="";
+		int indexMax=-1, instanceMax=-1;
+		double valMax=1.5;
+		for(int i=0; i<isTrainingSet.lastInstance().numValues()-1; i++){
+			if(valMax<=isTrainingSet.lastInstance().value(i)){
+				valMax=isTrainingSet.lastInstance().value(i);
+				indexMax=i;
+			}
+		}
+		Set<String>catRandom=new HashSet<String>();
+		if(indexMax!=-1){
+			valMax=0;
+			for(int i=0; i<isTrainingSet.numInstances()-1; i++){
+				if(valMax<isTrainingSet.instance(i).value(indexMax)){
+					valMax=isTrainingSet.instance(i).value(indexMax);
+					instanceMax=i;
+					catRandom.clear();
+					catRandom.add(isTrainingSet.instance(i).stringValue((isTrainingSet.instance(i).numValues())-1));
+				}else if(valMax==isTrainingSet.instance(i).value(indexMax)){
+					catRandom.add(isTrainingSet.instance(i).stringValue((isTrainingSet.instance(i).numValues())-1));
+				}
+			}
+			String test="";
+			Iterator<String>iterator=catRandom.iterator();
+			while(iterator.hasNext()){
+				test+=iterator.next()+" ";
+			}
+			System.out.println(test);
+			Random random=new Random();
+			int nb=random.nextInt(catRandom.size());
+			//System.out.println("index "+indexMax+" valeur "+isTrainingSet.instance(instanceMax).value(indexMax)+" nbInstance "+isTrainingSet.numInstances()+" instance "+instanceMax+" "+isTrainingSet.instance(instanceMax).stringValue((isTrainingSet.instance(instanceMax).numValues())-1));
+			String[] tab=catRandom.toArray(new String[catRandom.size()]);
+			cat=tab[nb];
+			System.out.println("result "+cat);
+			//cat=isTrainingSet.instance(instanceMax).stringValue((isTrainingSet.instance(instanceMax).numValues())-1);
+		}else{
+			cat="";
+			//cat="Autre"+item.getLangue();
+		}
+		return cat;
 	}
 
 	public void save() throws Exception{
