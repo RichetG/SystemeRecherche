@@ -15,6 +15,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingConstants;
 
 import Controleur.Action;
 
@@ -29,7 +30,7 @@ public class Interface extends JFrame{
 
 	private JMenuBar menuBar;
 	private JMenu menu;
-	public static JMenuItem flux, temps;
+	public static JMenuItem flux, temps, filtre;
 	public static JTextArea in, out;
 	private JScrollPane paneIn, paneOut;
 	public static JButton valide;
@@ -57,11 +58,11 @@ public class Interface extends JFrame{
 		menuBar=new JMenuBar();
 		menu=new JMenu("Opérations");
 		flux=new JMenuItem("Flux RSS");
-		temps=new JMenuItem("Temps rafraîchissement");
+		filtre=new JMenuItem("Filtres");
 		flux.addActionListener(action);
-		temps.addActionListener(action);
+		filtre.addActionListener(action);
 		menu.add(flux);
-		menu.add(temps);
+		menu.add(filtre);
 		menuBar.add(menu);
 		setJMenuBar(menuBar);
 
@@ -86,6 +87,7 @@ public class Interface extends JFrame{
 
 		//Zone de recherche
 		textSearch=new JLabel("Recherche: ");
+		textSearch.setHorizontalAlignment(SwingConstants.RIGHT);
 		bc.gridwidth=1;
 		bc.gridx=0;
 		bc.gridy=1;

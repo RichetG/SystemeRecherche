@@ -1,5 +1,9 @@
 package Controleur;
 
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -9,8 +13,13 @@ import java.util.HashMap;
 import java.util.Set;
 import java.util.TreeMap;
 
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 
 import org.apache.tika.exception.TikaException;
 import org.xml.sax.SAXException;
@@ -48,6 +57,9 @@ public class Action implements ActionListener{
 	private Categorie sportFr, sportEn, santeFr, santeEn, econoEn, econoFr, scienceFr, scienceEn, cinemaFr, cinemaEn;
 	private ListCategorie listCategorie;
 	private int cpt=1;
+	private JDialog dialog;
+	private boolean filtreOn=true;
+	private JCheckBox sante=new JCheckBox("Sante"), sport=new JCheckBox("Sport"), science=new JCheckBox("Science"), cine=new JCheckBox("Cinéma"), eco=new JCheckBox("Economie");
 
 	/**
 	 * Mise en place des actions de l'interface
@@ -56,6 +68,10 @@ public class Action implements ActionListener{
 	public void actionPerformed(ActionEvent event) {
 		if(event.getSource()==Interface.valide){
 			if(Interface.search.getText()!=null){
+				Interface.out.setText("");
+				if(filtreOn){
+					filtresFirst();
+				}
 				cpt=1;
 				try {
 					read();
@@ -106,6 +122,7 @@ public class Action implements ActionListener{
 					for(int k=0; k<listCategorie.size(); k++){
 						for(int l=0; l<listCategorie.get(k).size(); l++){
 							if(listCategorie.get(k).get(l).getID().equals(j)){
+								//affichage dans la sortie de l'interface
 								Interface.out.setText(Interface.out.getText()+affichage(listCategorie.get(k).get(l)));
 							}
 						}
@@ -121,6 +138,7 @@ public class Action implements ActionListener{
 					e.printStackTrace();
 				}*/
 			}
+			filtreOn=false;
 		}else if(event.getSource()==Interface.flux){
 			frame=new JFrame("");
 			frame.setVisible(false);
@@ -135,11 +153,49 @@ public class Action implements ActionListener{
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-		}else if(event.getSource()==Interface.temps){
-			frame=new JFrame("");
-			frame.setVisible(false);
-			String duree=JOptionPane.showInputDialog(frame, "Saissisez le temps de rafraîchiessement (en min):", "30*60");
-			feedParser.setTemps(Integer.parseInt(duree));
+		}else if(event.getSource()==Interface.filtre){
+			dialog=new JDialog();
+			dialog.setSize(320, 170);
+			dialog.setLayout(new BorderLayout());
+			JLabel categorie;
+			JPanel panel1, panel2, panel3, panel4, panel5;
+			panel3=new JPanel(new FlowLayout());
+			categorie=new JLabel("Veuillez sélectionné les catégories que désirées:");
+			panel3.add(categorie);
+			panel1=new JPanel(new FlowLayout());
+			panel1.add(sante);
+			panel1.add(sport);
+			panel1.add(science);
+			panel2=new JPanel(new FlowLayout());
+			panel2.add(cine);
+			panel2.add(eco);
+			panel4=new JPanel(new GridLayout(3, 1));
+			panel4.add(panel3);
+			panel4.add(panel1);
+			panel4.add(panel2);
+			dialog.add(panel4, "Center");
+			JButton valider, annuler;
+			panel5=new JPanel(new FlowLayout());
+			valider=new JButton("Valider");
+			valider.addActionListener(new ActionListener() {
+
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					dialog.setVisible(false);
+				}
+			});
+			annuler=new JButton("Annuler");
+			annuler.addActionListener(new ActionListener() {
+
+				@Override
+				public void actionPerformed(ActionEvent arg0) {
+					dialog.setVisible(false);
+				}
+			});
+			panel5.add(valider);
+			panel5.add(annuler);
+			dialog.add(panel5, "South");
+			dialog.setVisible(true);
 		}
 	}
 
@@ -151,36 +207,56 @@ public class Action implements ActionListener{
 		dicoEng.read(new File("donnee/dicoEng.txt"));
 		//categorit
 		listCategorie=new ListCategorie();
-		sportFr=new Categorie("SportFr");
-		scienceFr=new Categorie("ScienceFr");
-		cinemaFr=new Categorie("CinemaFr");
-		econoFr=new Categorie("EconoFr");
-		santeFr=new Categorie("SanteFr");
-		sportFr.read(new File("donnee/sportFr.ser"));
-		econoFr.read(new File("donnee/econoFr.ser"));
-		santeFr.read(new File("donnee/santeFr.ser"));
-		scienceFr.read(new File("donnee/scienceFr.ser"));
-		cinemaFr.read(new File("donnee/cinemaFr.ser"));
-		listCategorie.add(sportFr);
-		listCategorie.add(santeFr);
-		listCategorie.add(scienceFr);
-		listCategorie.add(econoFr);
-		listCategorie.add(cinemaFr);
-		sportEn=new Categorie("SportEn");
-		santeEn=new Categorie("SanteEn");
-		cinemaEn=new Categorie("CinemaEn");
-		scienceEn=new Categorie("ScienceEn");
-		econoEn=new Categorie("EconoEn");
-		cinemaEn.read(new File("donnee/cinemaEn.ser"));
-		sportEn.read(new File("donnee/sportEn.ser"));
-		santeEn.read(new File("donnee/santeEn.ser"));
-		scienceEn.read(new File("donnee/scienceEn.ser"));
-		econoEn.read(new File("donnee/econoEn.ser"));
-		listCategorie.add(sportEn);
-		listCategorie.add(santeEn);
-		listCategorie.add(scienceEn);
-		listCategorie.add(econoEn);
-		listCategorie.add(cinemaEn);
+		if(sport.isSelected()){
+			sportFr=new Categorie("SportFr");
+			sportFr.read(new File("donnee/sportFr.ser"));
+			listCategorie.add(sportFr);
+		}
+		if(science.isSelected()){
+			scienceFr=new Categorie("ScienceFr");
+			scienceFr.read(new File("donnee/scienceFr.ser"));
+			listCategorie.add(scienceFr);
+		}
+		if(cine.isSelected()){
+			cinemaFr=new Categorie("CinemaFr");
+			cinemaFr.read(new File("donnee/cinemaFr.ser"));
+			listCategorie.add(cinemaFr);
+		}
+		if(eco.isSelected()){
+			econoFr=new Categorie("EconoFr");
+			econoFr.read(new File("donnee/econoFr.ser"));
+			listCategorie.add(econoFr);
+		}
+		if(sante.isSelected()){
+			santeFr=new Categorie("SanteFr");
+			santeFr.read(new File("donnee/santeFr.ser"));
+			listCategorie.add(santeFr);
+		}
+		if(sport.isSelected()){
+			sportEn=new Categorie("SportEn");
+			sportEn.read(new File("donnee/sportEn.ser"));
+			listCategorie.add(sportEn);
+		}
+		if(sante.isSelected()){
+			santeEn=new Categorie("SanteEn");
+			santeEn.read(new File("donnee/santeEn.ser"));
+			listCategorie.add(santeEn);
+		}
+		if(cine.isSelected()){
+			cinemaEn=new Categorie("CinemaEn");
+			cinemaEn.read(new File("donnee/cinemaEn.ser"));
+			listCategorie.add(cinemaEn);
+		}
+		if(science.isSelected()){
+			scienceEn=new Categorie("ScienceEn");
+			scienceEn.read(new File("donnee/scienceEn.ser"));
+			listCategorie.add(scienceEn);
+		}
+		if(eco.isSelected()){
+			econoEn=new Categorie("EconoEn");
+			econoEn.read(new File("donnee/econoEn.ser"));
+			listCategorie.add(econoEn);
+		}
 	}
 
 	private String affichage(Item item){
@@ -227,5 +303,13 @@ public class Action implements ActionListener{
 		}
 		String sortie="Item "+(cpt++)+". Titre: "+titre+"\n        ID: "+id+"\n        Description: "+description+"\n        Auteur: "+auteur+"\n        Date: "+date+"\n        URL Source: "+source+"\n        URL Flux: "+flux+"\n        Langue: "+langue+"\n ------------------------------------------ \n";
 		return sortie;
+	}
+
+	private void filtresFirst(){
+		sante.setSelected(true);
+		science.setSelected(true);
+		sport.setSelected(true);
+		cine.setSelected(true);
+		eco.setSelected(true);
 	}
 }
