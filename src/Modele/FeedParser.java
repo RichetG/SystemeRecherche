@@ -304,7 +304,8 @@ public class FeedParser{
 						}
 					}
 				}
-				Action.indexerRSS.IndexRSS(lists.getItem(i));
+				//ne sert plus a rien
+				//Action.indexerRSS.IndexRSS(lists.getItem(i));
 			}
 		}
 		//classFr.save();

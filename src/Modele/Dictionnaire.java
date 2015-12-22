@@ -133,4 +133,12 @@ public class Dictionnaire {
 		}
 		return test;
 	}
+	
+	public boolean contains(String mot){
+		boolean tets=false;
+		if(dico.containsKey(mot)){
+			tets=true;
+		}
+		return tets;
+	}
 }
