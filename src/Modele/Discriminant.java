@@ -2,12 +2,23 @@ package Modele;
 
 import java.util.ArrayList;
 
+/**
+ * @description Classe Discriminant
+ * @author Richet Guillaume - Cadio Mathieu
+ * @date 23/12/2015
+ *
+ */
+
 public class Discriminant {
 	
 	private ArrayList<String>discriFr;
 	private ArrayList<String>discriEn;
 	
+	/**
+	 * Constructeur Discriminant
+	 */
 	public Discriminant(){
+		//connaissance de tous les termes à éviter dans le contenu des items en francais
 		discriFr=new ArrayList<String>();
 		discriFr.add("au");
 		discriFr.add("aux");
@@ -171,6 +182,7 @@ public class Discriminant {
 		discriFr.add("sans");
 		discriFr.add("soi");
 		
+		//idem mais en anglais
 		discriEn=new ArrayList<String>();
 		discriEn.add("i");
 		discriEn.add("me");
@@ -401,6 +413,11 @@ public class Discriminant {
 		discriEn.add("long");
 	}
 	
+	/**
+	 * Détermination de l'existance du mot dans la liste francaise
+	 * @param mot
+	 * @return boolean
+	 */
 	public boolean existFr(String mot){
 		boolean test=false;
 		for(int i=0; i<discriFr.size();i++){
@@ -412,6 +429,11 @@ public class Discriminant {
 		return test;
 	}
 	
+	/**
+	 * Détermination de l'existance du mot dans la liste anglaise
+	 * @param mot
+	 * @return boolean
+	 */
 	public boolean existEn(String mot){
 		boolean test=false;
 		for(int i=0; i<discriEn.size();i++){

@@ -4,6 +4,13 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 
+/**
+ * @description Classe Frequence
+ * @author Richet Guillaume - Cadio Mathieu
+ * @date 23/12/2015
+ *
+ */
+
 public class Frequence {
 
 	private int tf;
@@ -11,7 +18,7 @@ public class Frequence {
 	private HashSet<String>listKey;
 
 	/**
-	 * Constructeur Frequence par défault
+	 * Constructeur Frequence par défaut
 	 */
 	public Frequence(){
 		tf=1;

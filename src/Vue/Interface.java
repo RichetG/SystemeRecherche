@@ -99,7 +99,6 @@ public class Interface extends JFrame{
 		add(search, bc);
 
 		valide=new JButton("Valider");
-		//valide.setEnabled(false);
 		valide.addActionListener(action);
 		bc.gridx=2;
 		bc.gridy=1;

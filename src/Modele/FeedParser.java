@@ -13,6 +13,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentNavigableMap;
 
+
+
 //api tika
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -32,6 +34,8 @@ import org.xml.sax.ContentHandler;
 import Controleur.Action;
 import Vue.Interface;
 
+
+
 //api langage detection
 import com.cybozu.labs.langdetect.DetectorFactory;
 import com.sun.syndication.feed.synd.SyndEntry;
@@ -46,6 +50,7 @@ import com.sun.syndication.io.XmlReader;
  * @date 21/11/2015
  *
  */
+@SuppressWarnings("unused")
 public class FeedParser{ 
 
 	//TODO Création d'un flux JSON
@@ -88,7 +93,6 @@ public class FeedParser{
 		//TODO utilisation de mapDp
 		DB db=DBMaker.newFileDB(new File("BDD")).closeOnJvmShutdown().encryptionEnable("password").make();
 		Map=db.getTreeMap("Items");
-
 
 		//TODO Chargement du dossier avec les profils de langues
 		if(validite){
@@ -243,6 +247,7 @@ public class FeedParser{
 				//TODO categorie defaut
 				//flux des sport FR
 				if(urlEntree.equals("http://rmcsport.bfmtv.com/rss/basket/")){
+					//voir methode privé plus bas
 					stemFr(lists.getItem(i));
 					sportFr.addItemCategorie(lists.getItem(i));
 				}else if(urlEntree.equals("http://www.thetimes.co.uk/tto/sport/rss")){
@@ -272,6 +277,7 @@ public class FeedParser{
 				}else if(urlEntree.equals("http://www.thetimes.co.uk/tto/business/rss")){
 					stemEn(lists.getItem(i));
 					econoEn.addItemCategorie(lists.getItem(i));
+					//flux inconnu
 				}else{
 					if(lists.getItem(i).getLangue().equals("fr")){
 						stemFr(lists.getItem(i));
@@ -308,7 +314,6 @@ public class FeedParser{
 				//Action.indexerRSS.IndexRSS(lists.getItem(i));
 			}
 		}
-		//classFr.save();
 		//mise a jour du calcul de idf
 		for(String i: dicoFr.listStem()){
 			dicoFr.getFrequence(i).CalcIdf();
@@ -401,11 +406,17 @@ public class FeedParser{
 		this.URL=URL;
 	}
 
+	/**
+	 * Mise a jour du dictionnaire francais
+	 * @param i
+	 */
 	private void stemFr(Item i){
+		//nettoyage textuelle de l'item pour l'analyse
 		String traitementTit=i.getTitre().toLowerCase().replace(".", "").replace("/", "").replace(":", "").replace("?", "").replace("(", "").replace(",", "");	
 		String traitementDes=i.getDescription().toLowerCase().replace(".", "").replace("/", "").replace(":", "").replace("?", "").replace("(", "").replace(",", "");	
 		String[] tit=traitementTit.split(" ");
 		String[] des=traitementDes.split(" ");
+		//parcours de tous les mots de titre d l'item
 		for(int j=0; j<tit.length; j++){
 			//si le stem exixste dans le dico, on incremente tf, sinon on le cree
 			if(!discriminant.existFr(tit[j])){
@@ -416,6 +427,7 @@ public class FeedParser{
 				}
 			}
 		}
+		//idem pour tous les mots de description de l'item
 		for(int j=0; j<des.length; j++){
 			if(!discriminant.existFr(des[j])){
 				if(dicoFr.parcours(stem.motsRacine(des[j]))){
@@ -427,6 +439,10 @@ public class FeedParser{
 		}
 	}
 
+	/**
+	 * Mise à jour du dictionnaire anglais
+	 * @param i
+	 */
 	private void stemEn(Item i){
 		String traitementTit=i.getTitre().toLowerCase().replace(".", "").replace("/", "").replace(":", "").replace("?", "").replace("(", "").replace(",", "");	
 		String traitementDes=i.getDescription().toLowerCase().replace(".", "").replace("/", "").replace(":", "").replace("?", "").replace("(", "").replace(",", "");	

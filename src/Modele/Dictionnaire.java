@@ -10,6 +10,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
 
+/**
+ * @description Classe Dictionnaire
+ * @author Richet Guillaume - Cadio Mathieu
+ * @date 23/12/2015
+ *
+ */
+
 public class Dictionnaire {
 
 	private HashMap<String, Frequence> dico;
@@ -22,6 +29,10 @@ public class Dictionnaire {
 		dico=new HashMap<String, Frequence>();
 	}
 	
+	/**
+	 * Taille du dictionnaire
+	 * @return la taille
+	 */
 	public int size(){
 		return dico.size();
 	}
@@ -85,6 +96,10 @@ public class Dictionnaire {
 		}
 	}
 	
+	/**
+	 * Getter de la langue
+	 * @return langue
+	 */
 	public String getLangue(){
 		return langue;
 	}
@@ -121,7 +136,7 @@ public class Dictionnaire {
 	/**
 	 * Test de l'existance du stem
 	 * @param mots
-	 * @return
+	 * @return boolean
 	 */
 	public boolean parcours(String mots){
 		boolean test=false;
@@ -134,6 +149,11 @@ public class Dictionnaire {
 		return test;
 	}
 	
+	/**
+	 * Determination du mot dans le dictionnaire
+	 * @param mot
+	 * @return boolean
+	 */
 	public boolean contains(String mot){
 		boolean tets=false;
 		if(dico.containsKey(mot)){

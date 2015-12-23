@@ -1,7 +1,6 @@
 package Controleur;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -53,6 +52,7 @@ public class Action implements ActionListener{
 	private Dictionnaire dicoFr, dicoEng;
 	private Stemmer stemmer=new Stemmer();
 	private HashMap<String, Integer>croissant=new HashMap<String, Integer>();
+	@SuppressWarnings("unused")
 	private Comparateur comparateur;
 	private Categorie sportFr, sportEn, santeFr, santeEn, econoEn, econoFr, scienceFr, scienceEn, cinemaFr, cinemaEn;
 	private ListCategorie listCategorie;
@@ -65,24 +65,28 @@ public class Action implements ActionListener{
 	 * Mise en place des actions de l'interface
 	 * @param event
 	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void actionPerformed(ActionEvent event) {
+		//action sur le bouton valide
 		if(event.getSource()==Interface.valide){
 			if(Interface.search.getText()!=null){
 				Interface.out.setText("");
+				//action sur l'utilisation du filtre
 				if(filtreOn){
 					filtresFirst();
 				}
 				cpt=1;
 				try {
+					//voir methode privé plus bas
 					read();
 				} catch (ClassNotFoundException | IOException e) {
 					e.printStackTrace();
 				}
 				String[] mots=Interface.search.getText().toLowerCase().split(" ");
 				croissant.clear();
+				//parcous de tous les mots de la recherche
 				for(int i=0; i<mots.length; i++){
 					//determination du mot clé dans le dico francais donc passage par stem
-
 					if(!discriminant.existFr(mots[i])){
 						String res=stemmer.motsRacine(mots[i]);
 						if(dicoFr.contains(res)){
@@ -139,6 +143,7 @@ public class Action implements ActionListener{
 				}*/
 			}
 			filtreOn=false;
+			//action sur le flux
 		}else if(event.getSource()==Interface.flux){
 			frame=new JFrame("");
 			frame.setVisible(false);
@@ -153,7 +158,11 @@ public class Action implements ActionListener{
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+			//action sur le filtre
 		}else if(event.getSource()==Interface.filtre){
+			if(filtreOn){
+				filtresFirst();
+			}
 			dialog=new JDialog();
 			dialog.setSize(320, 170);
 			dialog.setLayout(new BorderLayout());
@@ -195,10 +204,16 @@ public class Action implements ActionListener{
 			panel5.add(valider);
 			panel5.add(annuler);
 			dialog.add(panel5, "South");
+			filtreOn=false;
 			dialog.setVisible(true);
 		}
 	}
 
+	/**
+	 * Stockage du dictionnaire ainsi que la connaissance des checkbox coché/non coché
+	 * @throws ClassNotFoundException
+	 * @throws IOException
+	 */
 	private void read() throws ClassNotFoundException, IOException{
 		//TODO dictionnaire
 		dicoFr=new Dictionnaire();
@@ -259,6 +274,11 @@ public class Action implements ActionListener{
 		}
 	}
 
+	/**
+	 * Affichage d'un item après recherche
+	 * @param item
+	 * @return string
+	 */
 	private String affichage(Item item){
 		String titre="", id="", description="", auteur="", date="", flux="", source="", langue="";
 		if(item.getTitre().equals("")){
@@ -305,6 +325,9 @@ public class Action implements ActionListener{
 		return sortie;
 	}
 
+	/**
+	 * Activation par defaut de tous les checkbox
+	 */
 	private void filtresFirst(){
 		sante.setSelected(true);
 		science.setSelected(true);

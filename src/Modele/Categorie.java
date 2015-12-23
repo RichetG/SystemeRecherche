@@ -9,6 +9,13 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 
+/**
+ * @description Classe Categorie
+ * @author Richet Guillaume - Cadio Mathieu
+ * @date 23/12/2015
+ *
+ */
+
 public class Categorie {
 
 	String categorie;
@@ -31,6 +38,11 @@ public class Categorie {
 		liste.add(item);
 	}
 
+	/**
+	 * Getter de l'item à partir de son numéro d'index
+	 * @param i
+	 * @return item
+	 */
 	public Item get(int i){
 		return liste.get(i);
 	}
@@ -50,10 +62,19 @@ public class Categorie {
 		this.categorie = categorie;
 	}
 
+	/**
+	 * Taille d ela liste d'item
+	 * @return taille 
+	 */
 	public int size(){
 		return liste.size();
 	}
 
+	/**
+	 * Sauvegarde de la liste des items de la categorie
+	 * @param filename
+	 * @throws IOException
+	 */
 	public void write(File filename) throws IOException{
 		try {
 			FileOutputStream fos=new FileOutputStream(filename);
@@ -70,6 +91,12 @@ public class Categorie {
 		}
 	}
 
+	/**
+	 * Restoration de la liste des items de la categorie
+	 * @param filename
+	 * @throws IOException
+	 * @throws ClassNotFoundException
+	 */
 	public void read(File filename) throws IOException, ClassNotFoundException{
 		try {
 			FileInputStream fos=new FileInputStream(filename);
