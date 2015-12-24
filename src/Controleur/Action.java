@@ -46,7 +46,6 @@ import com.sun.syndication.io.FeedException;
 public class Action implements ActionListener{
 
 	public static IndexerRSS indexerRSS=new IndexerRSS();
-	private FeedParser feedParser=new FeedParser();
 	private JFrame frame;
 	private Discriminant discriminant=new Discriminant();
 	private Dictionnaire dicoFr, dicoEng;
@@ -132,15 +131,6 @@ public class Action implements ActionListener{
 						}
 					}
 				}
-
-				//ne sert plus a rien
-				/*try {
-					Action.indexerRSS.close();
-					indexerRSS.SearchIndexRSS(Interface.search.getText());
-					indexerRSS.close();
-				} catch (IOException | ParseException e) {
-					e.printStackTrace();
-				}*/
 			}
 			filtreOn=false;
 			//action sur le flux
@@ -149,9 +139,9 @@ public class Action implements ActionListener{
 			frame.setVisible(false);
 			Interface.valide.setEnabled(true);
 			String url=JOptionPane.showInputDialog(frame, "Saissisez l'URL RSS:", "http://liberation.fr.feedsportal.com/c/32268/fe.ed/rss.liberation.fr/rss/10/");
-			feedParser.setURL(url);
+			Interface.feedParser.setURL(url);
 			try {
-				feedParser.ReaderFeed(feedParser.getURL());
+				Interface.feedParser.ReaderFeed(Interface.feedParser.getURL());
 			} catch (IllegalArgumentException | IOException | FeedException
 					| LangDetectException | SAXException | TikaException e) {
 				e.printStackTrace();

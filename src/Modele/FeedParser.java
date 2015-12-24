@@ -15,6 +15,8 @@ import java.util.concurrent.ConcurrentNavigableMap;
 
 
 
+
+
 //api tika
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -33,6 +35,8 @@ import org.xml.sax.ContentHandler;
 
 import Controleur.Action;
 import Vue.Interface;
+
+
 
 
 
@@ -70,6 +74,73 @@ public class FeedParser{
 	private Discriminant discriminant=new Discriminant();
 	private Classication classFr, classEn;
 	private Categorie sportFr, sportEn, santeFr, santeEn, econoEn, econoFr, scienceFr, scienceEn, cinemaFr, cinemaEn;
+
+	/**
+	 * Constructeur FeedParser
+	 * @throws Exception 
+	 */
+	public FeedParser(){
+		dicoFr=new Dictionnaire();
+		dicoEng=new Dictionnaire();
+		listCategorie=new ListCategorie();
+		sportFr=new Categorie("SportFr");
+		sportEn=new Categorie("SportEn");
+		santeFr=new Categorie("SanteFr");
+		santeEn=new Categorie("SanteEn");
+		scienceFr=new Categorie("ScienceFr");
+		scienceEn=new Categorie("ScienceEn");
+		cinemaFr=new Categorie("CinemaFr");
+		cinemaEn=new Categorie("CinemaEn");
+		econoFr=new Categorie("EconoFr");
+		econoEn=new Categorie("EconoEn");
+		listCategorie.add(sportFr);
+		listCategorie.add(sportEn);
+		listCategorie.add(santeFr);
+		listCategorie.add(santeEn);
+		listCategorie.add(scienceFr);
+		listCategorie.add(scienceEn);
+		listCategorie.add(econoFr);
+		listCategorie.add(econoEn);
+		listCategorie.add(cinemaFr);
+		listCategorie.add(cinemaEn);
+		new File("donnee").mkdir();
+		try {
+			entre+=Interface.in.getText()+"\n\n Mise à jour: 0%\n-------------------------\n";
+			curseur(entre);
+			ReaderFeed("http://rmcsport.bfmtv.com/rss/basket/");
+			entre+="Mise à jour: 20%\n-------------------------\n";
+			curseur(entre);
+			/*ReaderFeed("http://www.thetimes.co.uk/tto/sport/rss");
+			entre+="Mise à jour: 20%\n-------------------------\n";
+			curseur(entre);*/
+			ReaderFeed("http://www.lemonde.fr/sante/rss_full.xml");
+			entre+="Mise à jour: 40%\n-------------------------\n";
+			curseur(entre);	
+			/*ReaderFeed("http://www.thetimes.co.uk/tto/health/rss");
+			entre+="Mise à jour: 40%\n-------------------------\n";
+			curseur(entre);	*/	
+			ReaderFeed("http://www.lemonde.fr/sciences/rss_full.xml");
+			entre+="Mise à jour: 60%\n-------------------------\n";
+			curseur(entre);		
+			/*ReaderFeed("http://www.thetimes.co.uk/tto/science/rss");
+			entre+="Mise à jour: 60%\n-------------------------\n";
+			curseur(entre);*/	
+			ReaderFeed("http://rss.allocine.fr/ac/actualites/cine");
+			entre+="Mise à jour: 80%\n-------------------------\n";
+			curseur(entre);	
+			/*ReaderFeed("http://feeds.feedburner.com/cinemablendallthing");
+			entre+="Mise à jour: 80%\n-------------------------\n";
+			curseur(entre);*/
+			ReaderFeed("http://www.lesechos.fr/rss/rss_articles_journal.xml");
+			entre+="Mise à jour: 100%\n-------------------------\n";
+			curseur(entre);
+			/*ReaderFeed("http://www.thetimes.co.uk/tto/business/rss");
+			entre+="Mise à jour: 100%\n-------------------------\n";
+			curseur(entre);*/
+		} catch (Exception e) {
+			e.printStackTrace();
+		}	
+	}
 
 	/**
 	 * Recupération des flux RSS d'une url
@@ -187,27 +258,18 @@ public class FeedParser{
 			item=new Item(st, url.toString(), entry.getLink(), entry.getAuthor(), date, entry.getDescription().getValue().toString().replaceAll("[^\\d\\p{L}!#$€%&'`(),;:/@...]"," "), hashString.toString(), lang, text);
 			lists.addItem(item);
 		} 
-		/*try {
-			FileOutputStream out=new FileOutputStream(new File("items.json"));
-			objectMapper.writeValue(out, lists);
-		}catch (JsonGenerationException f){
-			f.printStackTrace();
-		}catch (IOException f){
-			f.printStackTrace();
-		}*/
 
 		//TODO categorie
-		listCategorie=new ListCategorie();
-		sportFr=new Categorie("SportFr");
-		sportEn=new Categorie("SportEn");
-		santeFr=new Categorie("SanteFr");
-		santeEn=new Categorie("SanteEn");
-		scienceFr=new Categorie("ScienceFr");
-		scienceEn=new Categorie("ScienceEn");
-		cinemaFr=new Categorie("CinemaFr");
-		cinemaEn=new Categorie("CinemaEn");
-		econoFr=new Categorie("EconoFr");
-		econoEn=new Categorie("EconoEn");
+		sportFr.clear();
+		sportEn.clear();
+		santeFr.clear();
+		santeEn.clear();
+		scienceFr.clear();
+		scienceEn.clear();
+		cinemaFr.clear();
+		cinemaEn.clear();
+		econoFr.clear();
+		econoEn.clear();
 		sportFr.read(new File("donnee/sportFr.ser"));
 		sportEn.read(new File("donnee/sportEn.ser"));
 		santeFr.read(new File("donnee/santeFr.ser"));
@@ -218,25 +280,13 @@ public class FeedParser{
 		cinemaEn.read(new File("donnee/cinemaEn.ser"));
 		econoFr.read(new File("donnee/econoFr.ser"));
 		econoEn.read(new File("donnee/econoEn.ser"));
-		listCategorie.add(sportFr);
-		listCategorie.add(sportEn);
-		listCategorie.add(santeFr);
-		listCategorie.add(santeEn);
-		listCategorie.add(scienceFr);
-		listCategorie.add(scienceEn);
-		listCategorie.add(econoFr);
-		listCategorie.add(econoEn);
-		listCategorie.add(cinemaFr);
-		listCategorie.add(cinemaEn);
-		
+
 		//TODO dictionnaire
-		dicoFr=new Dictionnaire();
-		dicoEng=new Dictionnaire();
 		System.out.println("Restauration des dicos\n");
 		dicoFr.read(new File("donnee/dicoFr.txt"));
 		dicoEng.read(new File("donnee/dicoEng.txt"));
 		stem=new Stemmer();
-		
+
 		//TODO ajout des items inexistants dans mapDb
 		for(String i:lists.KeySet()){
 			if(!Map.containsKey(i)){
@@ -310,8 +360,6 @@ public class FeedParser{
 						}
 					}
 				}
-				//ne sert plus a rien
-				//Action.indexerRSS.IndexRSS(lists.getItem(i));
 			}
 		}
 		//mise a jour du calcul de idf
@@ -321,17 +369,16 @@ public class FeedParser{
 		for(String i: dicoEng.listStem()){
 			dicoEng.getFrequence(i).CalcIdf();
 		}		
-		entre+="Taux de mise à jour: "+(ratio/(double)Map.size())*100+"%\n -----------------------------------\n\n";
-		Interface.in.setText(entre);
+		entre+="Taux de mise à jour de la base de donnée: "+(ratio/(double)Map.size())*100+"%\n-------------------------\n";
+		curseur(entre);
 		db.commit();
 		db.close();
 		ratio=0;
 		validite=false;
 
-		System.out.println("Sauvegarde des dicos\n");
+		System.out.println("Sauvegarde des dicos et des categories\n");
 		dicoFr.write(new File("donnee/dicoFr.txt"));
 		dicoEng.write(new File("donnee/dicoEng.txt"));
-
 		sportFr.write(new File("donnee/sportFr.ser"));
 		sportEn.write(new File("donnee/sportEn.ser"));
 		santeFr.write(new File("donnee/santeFr.ser"));
@@ -342,7 +389,7 @@ public class FeedParser{
 		cinemaEn.write(new File("donnee/cinemaEn.ser"));
 		econoFr.write(new File("donnee/econoFr.ser"));
 		econoEn.write(new File("donnee/econoEn.ser"));
-		
+
 		//TODO classifieur misa  jour final
 		System.out.println("Classification");
 		classFr=new Classication(dicoFr);
@@ -467,5 +514,11 @@ public class FeedParser{
 				}
 			}
 		}
+	}
+
+	private void curseur(String entree){
+		Interface.in.setText(entre);
+		int length = Interface.in.getText().length();
+		Interface.in.setCaretPosition(length);
 	}
 }  

@@ -112,4 +112,11 @@ public class Categorie {
 			e.printStackTrace();
 		}
 	}
+	
+	/**
+	 * Mise a zero de la liste
+	 */
+	public void clear(){
+		liste.clear();
+	}
 }

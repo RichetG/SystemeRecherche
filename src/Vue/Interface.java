@@ -18,6 +18,7 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 
 import Controleur.Action;
+import Modele.FeedParser;
 
 /**
  * @description Classe Interface
@@ -37,12 +38,17 @@ public class Interface extends JFrame{
 	private JLabel textSearch;
 	public static JTextField search;
 	private Action action=new Action();
+	public static FeedParser feedParser;
 
 	/**
 	 * Constructeur Interface
 	 */
 	public Interface(){
 		creerInterface();
+		feedParser=new FeedParser();
+		menu.setEnabled(true);
+		search.setEditable(true);
+		valide.setEnabled(true);
 	}
 
 	/**
@@ -57,6 +63,7 @@ public class Interface extends JFrame{
 		//Mise en place de la barre de menu
 		menuBar=new JMenuBar();
 		menu=new JMenu("Opérations");
+		menu.setEnabled(false);
 		flux=new JMenuItem("Flux RSS");
 		filtre=new JMenuItem("Filtres");
 		flux.addActionListener(action);
@@ -75,8 +82,19 @@ public class Interface extends JFrame{
 		bc.weighty=3; 
 
 		//Zone de texte d'ajout des items
-		in=new JTextArea();
+		in=new JTextArea("Veuillez patienter quelques minutes que la base de donnée se mettent à jour avec les flux suivant:\n"
+				+ "http://rmcsport.bfmtv.com/rss/basket/ Sport Fr \n"
+				+ "http://www.thetimes.co.uk/tto/sport/rss Sport En \n"
+				+ "http://www.lemonde.fr/sante/rss_full.xml Sante Fr \n"
+				+ "http://www.thetimes.co.uk/tto/health/rss Sante En \n"
+				+ "http://www.thetimes.co.uk/tto/science/rss Science En \n"
+				+ "http://www.lemonde.fr/sciences/rss_full.xml Science Fr \n"
+				+ "http://feeds.feedburner.com/cinemablendallthing Cinema En \n"
+				+ "http://rss.allocine.fr/ac/actualites/cine Cinema Fr \n"
+				+ "http://www.lesechos.fr/rss/rss_articles_journal.xml Economie Fr \n"
+				+ "http://www.thetimes.co.uk/tto/business/rss Economie En");
 		in.setEditable(false);
+		in.setRows(15);
 		paneIn=new JScrollPane(in);
 		paneIn.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 		paneIn.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
@@ -94,11 +112,13 @@ public class Interface extends JFrame{
 		add(textSearch, bc);
 
 		search=new JTextField();
+		search.setEditable(false);
 		bc.gridx=1;
 		bc.gridy=1;
 		add(search, bc);
 
 		valide=new JButton("Valider");
+		valide.setEnabled(false);
 		valide.addActionListener(action);
 		bc.gridx=2;
 		bc.gridy=1;
@@ -107,6 +127,7 @@ public class Interface extends JFrame{
 		//Zone de texte de sortie de recherche des items
 		out=new JTextArea();
 		out.setEditable(false);
+		out.setRows(15);
 		paneOut=new JScrollPane(out);
 		paneOut.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 		paneOut.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
